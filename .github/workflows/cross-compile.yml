@@ -15,97 +15,17 @@ jobs:
     strategy:
       matrix:
         include:
-          # Linux x64 - PHP8.0
-          - build: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            php-versions: '8.0'
-
-          # Macos x64 - PHP8.0
-          - build: x86_64-apple-darwin
-            os: macos-latest
-            target: x86_64-apple-darwin
-            php-versions: '8.0'
-            
-          - build: aarch64-apple-darwin
-            os: macos-latest
-            target: aarch64-apple-darwin
-            php-versions: '8.0'
-          
-          # Windows x64 - PHP8.0
-          - build: x86_64-pc-windows-msvc
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-            php-versions: '8.0'
-
-          # Linux x64 - PHP8.1
-          - build: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            php-versions: '8.1'
-
-          # Macos x64 - PHP8.1
-          - build: x86_64-apple-darwin
-            os: macos-latest
-            target: x86_64-apple-darwin
-            php-versions: '8.1'
-            
-          - build: aarch64-apple-darwin
-            os: macos-latest
-            target: aarch64-apple-darwin
-            php-versions: '8.1'
-          
-          # Windows x64 - PHP8.1
-          - build: x86_64-pc-windows-msvc
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-            php-versions: '8.1'
-            
-          # Linux x64 - PHP8.2
-          - build: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            php-versions: '8.2'
-
-          # Macos x64 - PHP8.2
-          - build: x86_64-apple-darwin
-            os: macos-latest
-            target: x86_64-apple-darwin
-            php-versions: '8.2'
-            
-          - build: aarch64-apple-darwin
-            os: macos-latest
-            target: aarch64-apple-darwin
-            php-versions: '8.2'
-          
-          # Windows x64 - PHP8.2
-          - build: x86_64-pc-windows-msvc
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-            php-versions: '8.2'
-
-          # Linux x64 - PHP8.3
-          - build: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            php-versions: '8.3'
-
-          # Macos x64 - PHP8.3
-          - build: x86_64-apple-darwin
-            os: macos-latest
-            target: x86_64-apple-darwin
-            php-versions: '8.3'
-            
-          - build: aarch64-apple-darwin
-            os: macos-latest
-            target: aarch64-apple-darwin
-            php-versions: '8.3'
-          
           # Windows x64 - PHP8.3
           - build: x86_64-pc-windows-msvc
-            os: windows-latest
+            os: windows-2019
             target: x86_64-pc-windows-msvc
             php-versions: '8.3'
+            
+          # Windows x64 - PHP8.4
+          - build: x86_64-pc-windows-msvc
+            os: windows-2022
+            target: x86_64-pc-windows-msvc
+            php-versions: '8.4'
           
     steps:
       - name: Checkout
@@ -116,13 +36,13 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Install Rust (MacOS and Linux)
-        if: matrix.os != 'windows-latest'
+        if: ${{ !startsWith(matrix.os, 'windows-') }}
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.target }}
       
       - name: Install Rust (Windows)
-        if: matrix.os == 'windows-latest'
+        if: startsWith(matrix.os, 'windows-')
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -160,7 +80,7 @@ jobs:
             mv "target/${{ matrix.target }}/release/lib${binary_name}.dylib" "$dirname" 
             mv "target/${{ matrix.target }}/release/lib${binary_name}.so" "$dirname"
             mv "libsql_php_extension.stubs.php" "$dirname"
-          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+          elif [ ${{ startsWith(matrix.os, 'windows-') }} ]; then
             mv "target/${{ matrix.target }}/release/${binary_name}.dll" "$dirname"
             mv "libsql_php_extension.stubs.php" "$dirname"
             ls "target/${{ matrix.target }}/release"
@@ -169,7 +89,7 @@ jobs:
             mv "libsql_php_extension.stubs.php" "$dirname"
           fi
 
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          if [ ${{ startsWith(matrix.os, 'windows-') }} ]; then
             7z a "$dirname.zip" "$dirname"
             echo "ASSET=$dirname.zip" >> $GITHUB_ENV
           else
