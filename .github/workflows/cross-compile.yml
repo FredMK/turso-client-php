@@ -20,12 +20,6 @@ jobs:
             os: windows-2019
             target: x86_64-pc-windows-msvc
             php-versions: '8.3'
-            
-          # Windows x64 - PHP8.4
-          - build: x86_64-pc-windows-msvc
-            os: windows-2022
-            target: x86_64-pc-windows-msvc
-            php-versions: '8.4'
           
     steps:
       - name: Checkout
